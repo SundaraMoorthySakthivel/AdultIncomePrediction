@@ -1,113 +1,129 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-st.set_page_config(page_title="Adult Income Prediction", layout="centered")
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    matthews_corrcoef,
+    confusion_matrix,
+    classification_report
+)
 
-st.title("💼 Adult Income Classification App")
-st.write("Predict whether income is >50K or <=50K")
+st.set_page_config(page_title="Adult Income Classification", layout="wide")
 
-# -----------------------------
+st.title("Adult Income Classification App")
+st.write("Upload a test dataset CSV file to evaluate the trained models.")
+
+# ---------------------------------------------------
 # Load Models
-# -----------------------------
-MODEL_PATH = "model"
+# ---------------------------------------------------
 
 models = {
-    "Logistic Regression": joblib.load(os.path.join(MODEL_PATH, "logistic_regression.pkl")),
-    "Decision Tree": joblib.load(os.path.join(MODEL_PATH, "decision_tree.pkl")),
-    "KNN": joblib.load(os.path.join(MODEL_PATH, "knn.pkl")),
-    "Naive Bayes": joblib.load(os.path.join(MODEL_PATH, "naive_bayes.pkl")),
-    "Random Forest": joblib.load(os.path.join(MODEL_PATH, "random_forest.pkl")),
-    "XGBoost": joblib.load(os.path.join(MODEL_PATH, "xgboost.pkl"))
+    "Logistic Regression": joblib.load("model/logistic_regression.pkl"),
+    "Decision Tree": joblib.load("model/decision_tree.pkl"),
+    "KNN": joblib.load("model/knn.pkl"),
+    "Naive Bayes": joblib.load("model/naive_bayes.pkl"),
+    "Random Forest": joblib.load("model/random_forest.pkl"),
+    "XGBoost": joblib.load("model/xgboost.pkl"),
 }
 
-selected_model_name = st.selectbox("Select Model", list(models.keys()))
-model = models[selected_model_name]
+# ---------------------------------------------------
+# Model Selection
+# ---------------------------------------------------
 
-# -----------------------------
-# User Inputs
-# -----------------------------
-st.subheader("Enter Person Details")
+model_name = st.selectbox("Select Model", list(models.keys()))
+model = models[model_name]
 
-age = st.number_input("Age", min_value=17, max_value=90, value=30)
+# ---------------------------------------------------
+# Upload Dataset
+# ---------------------------------------------------
 
-workclass = st.selectbox("Workclass", [
-    "Private", "Self-emp-not-inc", "Self-emp-inc", "Federal-gov",
-    "Local-gov", "State-gov", "Without-pay", "Never-worked"
-])
+uploaded_file = st.file_uploader("Upload Test CSV File", type=["csv"])
 
-fnlwgt = st.number_input("Final Weight (fnlwgt)", min_value=0, value=100000)
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
 
-education = st.selectbox("Education", [
-    "Bachelors", "Some-college", "11th", "HS-grad", "Prof-school",
-    "Assoc-acdm", "Assoc-voc", "9th", "7th-8th", "12th",
-    "Masters", "1st-4th", "10th", "Doctorate", "5th-6th", "Preschool"
-])
+    st.write("### Uploaded Dataset Preview")
+    st.dataframe(df.head())
 
-education_num = st.number_input("Education Number", min_value=1, max_value=16, value=10)
-
-marital_status = st.selectbox("Marital Status", [
-    "Married-civ-spouse", "Divorced", "Never-married",
-    "Separated", "Widowed", "Married-spouse-absent"
-])
-
-occupation = st.selectbox("Occupation", [
-    "Tech-support", "Craft-repair", "Other-service", "Sales",
-    "Exec-managerial", "Prof-specialty", "Handlers-cleaners",
-    "Machine-op-inspct", "Adm-clerical", "Farming-fishing",
-    "Transport-moving", "Priv-house-serv", "Protective-serv",
-    "Armed-Forces"
-])
-
-relationship = st.selectbox("Relationship", [
-    "Wife", "Own-child", "Husband", "Not-in-family",
-    "Other-relative", "Unmarried"
-])
-
-race = st.selectbox("Race", [
-    "White", "Asian-Pac-Islander", "Amer-Indian-Eskimo",
-    "Other", "Black"
-])
-
-sex = st.selectbox("Sex", ["Male", "Female"])
-
-capital_gain = st.number_input("Capital Gain", min_value=0, value=0)
-capital_loss = st.number_input("Capital Loss", min_value=0, value=0)
-
-hours_per_week = st.number_input("Hours per Week", min_value=1, max_value=100, value=40)
-
-native_country = st.selectbox("Native Country", [
-    "United-States", "India", "Mexico", "Philippines",
-    "Germany", "Canada", "England", "China",
-    "Cuba", "Jamaica", "South", "Italy"
-])
-
-# -----------------------------
-# Prediction
-# -----------------------------
-if st.button("Predict Income"):
-
-    input_data = pd.DataFrame([{
-        "age": age,
-        "workclass": workclass,
-        "fnlwgt": fnlwgt,
-        "education": education,
-        "education.num": education_num,
-        "marital.status": marital_status,
-        "occupation": occupation,
-        "relationship": relationship,
-        "race": race,
-        "sex": sex,
-        "capital.gain": capital_gain,
-        "capital.loss": capital_loss,
-        "hours.per.week": hours_per_week,
-        "native.country": native_country
-    }])
-
-    prediction = model.predict(input_data)[0]
-
-    if prediction == 1 or prediction == ">50K":
-        st.success("💰 Predicted Income: >50K")
+    # Check required column
+    if "income" not in df.columns:
+        st.error("Dataset must contain 'income' column.")
     else:
-        st.info("📉 Predicted Income: <=50K")
+        # Separate features and target
+        X = df.drop("income", axis=1)
+        y = df["income"]
+
+        # Convert target to binary if needed
+        y = y.replace({">50K": 1, "<=50K": 0})
+
+        # ---------------------------------------------------
+        # Prediction
+        # ---------------------------------------------------
+
+        y_pred = model.predict(X)
+
+        try:
+            y_prob = model.predict_proba(X)[:, 1]
+            auc = roc_auc_score(y, y_prob)
+        except:
+            auc = "Not Available"
+
+        # ---------------------------------------------------
+        # Evaluation Metrics
+        # ---------------------------------------------------
+
+        accuracy = accuracy_score(y, y_pred)
+        precision = precision_score(y, y_pred)
+        recall = recall_score(y, y_pred)
+        f1 = f1_score(y, y_pred)
+        mcc = matthews_corrcoef(y, y_pred)
+
+        st.write("## Model Evaluation Metrics")
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric("Accuracy", f"{accuracy:.4f}")
+        col2.metric("Precision", f"{precision:.4f}")
+        col3.metric("Recall", f"{recall:.4f}")
+
+        col4, col5, col6 = st.columns(3)
+
+        col4.metric("F1 Score", f"{f1:.4f}")
+        col5.metric("AUC Score", f"{auc if isinstance(auc,str) else f'{auc:.4f}'}")
+        col6.metric("MCC Score", f"{mcc:.4f}")
+
+        # ---------------------------------------------------
+        # Confusion Matrix
+        # ---------------------------------------------------
+
+        st.write("## Confusion Matrix")
+
+        cm = confusion_matrix(y, y_pred)
+
+        fig, ax = plt.subplots()
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+                    xticklabels=["<=50K", ">50K"],
+                    yticklabels=["<=50K", ">50K"])
+        plt.ylabel("Actual")
+        plt.xlabel("Predicted")
+        st.pyplot(fig)
+
+        # ---------------------------------------------------
+        # Classification Report
+        # ---------------------------------------------------
+
+        st.write("## Classification Report")
+
+        report = classification_report(y, y_pred, output_dict=True)
+        report_df = pd.DataFrame(report).transpose()
+        st.dataframe(report_df)
+
+else:
+    st.info("Please upload a CSV file to begin evaluation.")

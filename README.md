@@ -1,110 +1,175 @@
-# Adult Income Classification using Machine Learning
+# Adult Income Classification – Machine Learning Project
+
+## 1️⃣ Problem Statement
+
+The objective of this project is to build a Machine Learning classification system that predicts whether an individual's income exceeds \$50K per year based on demographic and employment-related attributes.
+
+The system allows users to upload a test dataset and evaluate multiple trained machine learning models through a Streamlit web application.
 
 ---
 
-## a. Problem Statement
+## 2️⃣ Dataset Description
 
-The objective of this project is to build machine learning classification models to predict whether an individual earns more than $50K per year based on demographic and employment-related attributes.
+The dataset used is the Adult Census Income dataset.
 
-This is a binary classification problem where:
+### Target Variable:
+- `income`
+  - <=50K → 0
+  - >50K → 1
 
-- Class 0 → Income <= 50K
-- Class 1 → Income > 50K
+### Feature Columns:
 
-The project compares the performance of multiple machine learning models using various evaluation metrics.
-
----
-
-## b. Dataset Description
-
-Dataset: Adult Income Dataset (Census Income Dataset)
-
-Source: UCI Machine Learning Repository / Kaggle
-
-Number of Instances: 48,842  
-Number of Features: 14  
-
-Features include:
-
-- Age
-- Workclass
-- Education
-- Marital Status
-- Occupation
-- Relationship
-- Race
-- Sex
-- Capital Gain
-- Capital Loss
-- Hours per Week
-- Native Country
-- etc.
-
-Target Variable:
-- income (<=50K or >50K)
-
-The dataset satisfies the assignment requirements:
-- More than 12 features
-- More than 500 instances
-- Binary classification problem
+| Feature | Description |
+|----------|-------------|
+| age | Age of individual |
+| workclass | Employment type |
+| fnlwgt | Final sampling weight |
+| education | Education level |
+| education.num | Education number (numeric encoding) |
+| marital.status | Marital status |
+| occupation | Occupation type |
+| relationship | Family relationship |
+| race | Race category |
+| sex | Gender |
+| capital.gain | Capital gain |
+| capital.loss | Capital loss |
+| hours.per.week | Weekly working hours |
+| native.country | Country of origin |
 
 ---
 
-## c. Models Used and Evaluation Metrics
+## 3️⃣ Models Used
 
-The following six machine learning models were implemented:
+The following classification models were implemented:
 
-1. Logistic Regression
-2. Decision Tree Classifier
-3. K-Nearest Neighbor (KNN)
-4. Naive Bayes (Gaussian)
-5. Random Forest (Ensemble)
-6. XGBoost (Ensemble Boosting)
+1. Logistic Regression  
+2. Decision Tree  
+3. K-Nearest Neighbors (KNN)  
+4. Naive Bayes  
+5. Random Forest  
+6. XGBoost  
 
-### Evaluation Metrics Used
+All models were trained using a Scikit-learn Pipeline with:
+- StandardScaler (for numerical features)
+- OneHotEncoder (for categorical features)
+- ColumnTransformer for preprocessing
 
-For each model, the following metrics were calculated:
+---
+
+## 4️⃣ Evaluation Metrics
+
+Each model was evaluated using:
 
 - Accuracy
-- AUC Score
 - Precision
 - Recall
-- F1 Score
+- F1-Score
+- ROC-AUC Score
 - Matthews Correlation Coefficient (MCC)
+- Confusion Matrix
+- Classification Report
 
 ---
 
-## Model Performance Comparison
+## 5️⃣ Model Comparison & Observations
 
-| Model | Accuracy | AUC | Precision | Recall | F1 Score| MCC
-|-------|----------|-----|-----------|--------|----------|-----|
-Logistic Regression | 0.854291 | 0.904345 | 0.739366 | 0.609694 | 0.668298 | 0.580438
-Decision Tree | 0.812068 | 0.746233 | 0.607635 | 0.619260 | 0.613392 | 0.489307
-KNN | 0.831107 | 0.852494 | 0.666193 | 0.598214 | 0.630376 | 0.522602 
-Naive Bayes | 0.537540 | 0.735753 | 0.336355 | 0.946429 | 0.496321 | 0.324052
-Random Forest | 0.847229 | 0.899472 | 0.714286 | 0.690566 | 0.657487 | 0.562920
-XGBoost | 0.871181 | 0.923278 | 0.774680 | 0.655612 | 0.710190 | 0.631726
+| Model | Strengths | Observations |
+|--------|------------|--------------|
+| Logistic Regression | Simple & interpretable | Performs well with balanced data |
+| Decision Tree | Easy to visualize | May overfit |
+| KNN | Simple algorithm | Sensitive to scaling |
+| Naive Bayes | Fast & efficient | Assumes feature independence |
+| Random Forest | High accuracy | More robust than Decision Tree |
+| XGBoost | Strong performance | Best generalization in most cases |
 
----
-
-## Observations
-
-1. Logistic Regression performed well due to the linear separability of some features.
-2. Decision Tree showed moderate performance but may overfit.
-3. KNN performance depends on feature scaling and data distribution.
-4. Naive Bayes performed reasonably despite independence assumptions.
-5. Random Forest improved performance through ensemble learning and reduced overfitting.
-6. XGBoost achieved the best performance due to gradient boosting optimization.
-
-Overall, ensemble methods (Random Forest and XGBoost) outperformed individual models.
+### Observations:
+- Random Forest and XGBoost typically achieve higher accuracy and AUC.
+- Logistic Regression provides good baseline performance.
+- Naive Bayes performs fast but may slightly underperform due to independence assumptions.
+- Ensemble methods generally outperform single-tree models.
 
 ---
 
-## Deployment
+## 6️⃣ Streamlit App Features
 
-The project is deployed using Streamlit Community Cloud.
+The Streamlit web application includes:
 
-Users can:
-- Select a trained model
-- Enter feature values
-- Get real-time income prediction
+✔ Dataset upload option (CSV file – test data only)  
+✔ Model selection dropdown  
+✔ Display of evaluation metrics  
+✔ Confusion matrix visualization  
+✔ Classification report table  
+
+---
+
+## 7️⃣ Project Structure
+
+AdultIncomeProject/
+│
+│-- app.py
+│-- requirements.txt
+│-- README.md
+│-- model/
+│ │-- logistic_regression.pkl
+│ │-- decision_tree.pkl
+│ │-- knn.pkl
+│ │-- naive_bayes.pkl
+│ │-- random_forest.pkl
+│ │-- xgboost.pkl
+
+## 8️⃣ Installation & Running Locally
+
+### Clone Repository
+
+git clone https://github.com/SundaraMoorthySakthivel/AdultIncomePrediction.git
+cd Adult-Income-Project
+
+### Install Dependencies
+
+pip install -r requirements.txt
+
+### Run Streamlit App
+
+streamlit run app.py
+
+
+---
+
+## 9️⃣ Deployment on Streamlit Community Cloud
+
+1. Go to https://streamlit.io/cloud
+2. Sign in using GitHub
+3. Click “New App”
+4. Select repository
+5. Choose branch (main)
+6. Select app.py
+7. Click Deploy
+
+The deployed application link will be generated automatically.
+
+---
+
+## 10 Requirements
+
+streamlit
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+xgboost
+joblib
+
+---
+
+## 📌 Conclusion
+
+This project demonstrates a complete Machine Learning workflow including:
+
+- Data preprocessing
+- Model training
+- Performance evaluation
+- Model comparison
+- Web deployment using Streamlit
+
+The system provides an interactive platform for evaluating classification models on unseen test datasets.
